@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: "user-service"
+  cloud:
+    vault:
+      uri: "${VAULT_URI:http://localhost:8200}"
+      token: "${VAULT_TOKEN:hvs.fI1GQCutzKi6ouX36ZbOYNyI}"
+      kv:
+        enabled: true
+        backend: kv
+  config:
+    import: "vault://kv/general, vault://kv/${spring.application.name}"
+
+server:
+  port: 8500

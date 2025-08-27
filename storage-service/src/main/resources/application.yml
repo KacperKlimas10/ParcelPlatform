@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: "storage-service"
+
+  cloud:
+    aws:
+      s3:
+        endpoint: "${MINIO_ENDPOINT:http://localhost:9000}"
+
+    vault:
+      uri: "${VAULT_URI:http://localhost:8200}"
+      token: "${VAULT_TOKEN:hvs.fI1GQCutzKi6ouX36ZbOYNyI}"
+      kv:
+        enabled: true
+        backend: kv
+  config:
+    import: "vault://kv/${spring.application.name}, vault://kv/general"
+
+  rabbitmq:
+    host: "${RABBITMQ_HOST:localhost}"
+    port: "${RABBITMQ_PORT:5672}"
+    virtual-host: "${RABBITMQ_VHOST:rabbitmq}"
+    template:
+      retry:
+        enabled: true
+        initial-interval: 2s
+
+server:
+  port: 8501
+
+env:
+  aws:
+    bucket:
+      name: "${MINIO_BUCKET:${spring.application.name}}"
