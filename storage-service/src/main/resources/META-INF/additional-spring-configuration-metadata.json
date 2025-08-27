@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "env.aws.bucket.name",
+      "type": "java.lang.String",
+      "description": "Bucket name for storage service."
+    }
+  ]
+}
