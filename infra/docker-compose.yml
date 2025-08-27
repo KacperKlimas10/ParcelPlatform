@@ -150,6 +150,8 @@ services:
       POSTGRES_USER: kacper
       POSTGRES_PASSWORD: kacper
       POSTGRES_DB: hugoparcel
+    ports:
+      - "5432:5432"
     volumes:
       - postgresql:/var/lib/postgresql/data
     networks:

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
-@RequestMapping("/api/v1/event")
+@RequestMapping("/api/v1/storage")
 @RequiredArgsConstructor
 public class StorageController {
 
@@ -18,6 +18,6 @@ public class StorageController {
 
     @PostMapping("/create")
     public CompletableFuture<Event> createEvent() {
-        return storageService.uploadFile("test.txt");
+        return null;
     }
 }

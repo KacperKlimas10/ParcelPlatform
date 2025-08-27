@@ -1,12 +1,12 @@
 spring:
   application:
     name: "storage-service"
-
+  datasource:
+    url: "${DB_URL:jdbc:postgresql://localhost/hugoparcel}"
   cloud:
     aws:
       s3:
         endpoint: "${MINIO_ENDPOINT:http://localhost:9000}"
-
     vault:
       uri: "${VAULT_URI:http://localhost:8200}"
       token: "${VAULT_TOKEN:hvs.fI1GQCutzKi6ouX36ZbOYNyI}"
@@ -15,7 +15,6 @@ spring:
         backend: kv
   config:
     import: "vault://kv/${spring.application.name}, vault://kv/general"
-
   rabbitmq:
     host: "${RABBITMQ_HOST:localhost}"
     port: "${RABBITMQ_PORT:5672}"
@@ -24,10 +23,8 @@ spring:
       retry:
         enabled: true
         initial-interval: 2s
-
 server:
-  port: 8501
-
+  port: "${SERVER_PORT:8501}"
 env:
   aws:
     bucket:

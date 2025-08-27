@@ -22,9 +22,9 @@ public class RabbitEventPublisher implements EventPublisher {
     public Event publish(Event event) {
         try {
             rabbitTemplate.convertAndSend(
-                    configMap.get(event.getClass()).get("exchange"),
-                    configMap.get(event.getClass()).get("routingKey"),
-                    event
+                configMap.get(event.getClass()).get("exchange"),
+                configMap.get(event.getClass()).get("routingKey"),
+                event
             );
             return event;
         } catch (AmqpException amqpException) {

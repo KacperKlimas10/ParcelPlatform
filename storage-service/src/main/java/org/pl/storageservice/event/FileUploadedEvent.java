@@ -10,6 +10,7 @@ import java.util.UUID;
 @Builder
 public class FileUploadedEvent extends Event {
     private final URL putSignedUrl;
+    private final URL getSignedUrl;
     private final UUID fileUUID;
     private final String fileName;
 }

@@ -19,11 +19,19 @@ public class S3StorageProvider implements StorageRepository {
 
    @Override
    public URL getSignedUrl(String filename, int durationMinutes) {
-       return s3Template.createSignedGetURL(bucketName, filename, Duration.ofMinutes(durationMinutes));
+      return s3Template.createSignedGetURL(
+         bucketName,
+         filename,
+         Duration.ofMinutes(durationMinutes)
+       );
    }
 
    @Override
    public URL putSignedUrl(String filename, int durationMinutes) {
-       return s3Template.createSignedPutURL(bucketName, filename, Duration.ofMinutes(durationMinutes));
+      return s3Template.createSignedPutURL(
+         bucketName,
+         filename,
+         Duration.ofMinutes(durationMinutes)
+       );
    }
 }
