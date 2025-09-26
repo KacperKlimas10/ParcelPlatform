@@ -1,6 +1,13 @@
 spring:
   application:
     name: "user-service"
+  datasource:
+    url: "${DB_URL:jdbc:postgresql://localhost/hugoparcel}"
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
   cloud:
     vault:
       uri: "${VAULT_URI:http://localhost:8200}"

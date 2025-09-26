@@ -1,8 +1,6 @@
 spring:
   application:
     name: "storage-service"
-  datasource:
-    url: "${DB_URL:jdbc:postgresql://localhost/hugoparcel}"
   cloud:
     aws:
       s3:
@@ -28,4 +26,4 @@ server:
 env:
   aws:
     bucket:
-      name: "${MINIO_BUCKET:${spring.application.name}}"
+      name: "${MINIO_BUCKET:storage-service}"

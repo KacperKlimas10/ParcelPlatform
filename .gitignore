@@ -1,0 +1,4 @@
+.idea
+infrastructure/prod/terraform/.terraform
+
+infrastructure/prod/terraform/.terraform.lock.hcl
