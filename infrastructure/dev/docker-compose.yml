@@ -4,7 +4,6 @@ services:
 
   kong-cp:
     image: '${GW_IMAGE:-kong/kong-gateway:3.11.0.2}'
-    container_name: kong-cp
     restart: on-failure
     environment:
       KONG_DATABASE: off
@@ -31,12 +30,13 @@ services:
   # BROKERS
 
   rabbitmq:
-    image: rabbitmq:latest
+    image: rabbitmq:management
     restart: always
     environment:
       RABBITMQ_DEFAULT_USER: kacper
       RABBITMQ_DEFAULT_PASS: kacper
       RABBITMQ_DEFAULT_VHOST: rabbitmq
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: -rabbitmq_management load_definitions "/etc/rabbitmq/definitions.json"
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -45,19 +45,16 @@ services:
       - ./rabbitmq/config:/etc/rabbitmq
     networks:
       - backend-network
-    command: |
-      rabbitmq-server start && /
-      rabbitmqctl export_definitions /etc/rabbitmq/ParcelPlatformRabbitMQ.json
 
   # SECRETS
 
   vault:
     image: vault:1.13.3
-    restart: always
+    restart: on-failure
     ports:
       - "8200:8200"
     volumes:
-      - vault-file:/vault/file
+      - ./vault/data:/vault/file
       - ./vault/config:/vault/config
       - ./vault/logs:/vault/logs
     networks:
@@ -82,7 +79,7 @@ services:
     image: registry:latest
     restart: always
     volumes:
-      - registry:/var/lib/registry
+      - ./registry/data:/var/lib/registry
     networks:
       - backend-network
 
@@ -115,7 +112,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: kacper
       MONGO_INITDB_ROOT_PASSWORD: kacper
     volumes:
-      - mongo:/data/db
+      - mongodb:/data/db
     networks:
       - db-network
   minio:
@@ -128,7 +125,7 @@ services:
       - "9000:9000"
       - "9001:9001"
     volumes:
-      - minio:/data
+      - ./minio/data:/data
     networks:
       - db-network
     command: server /data --console-address ":9001"
@@ -172,16 +169,28 @@ services:
 
   # MONITORING
 
+  prometheus:
+    image: prom/prometheus:main
+    restart: always
+    networks:
+      - monitoring-network
+    volumes:
+      - ./prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml
+  grafana:
+    image: grafana/grafana:12.2.0-ubuntu
+    restart: always
+    ports:
+      - "3000:3000"
+    networks:
+      - monitoring-network
+
+
 volumes:
   postgresql:
+  mongodb:
   redis:
   redisinsight:
-  mongo:
-  minio:
   rabbitmq:
-  kong_db_data:
-  registry:
-  vault-file:
 
 networks:
   backend-network:

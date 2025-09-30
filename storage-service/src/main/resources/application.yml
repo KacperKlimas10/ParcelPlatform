@@ -7,7 +7,7 @@ spring:
         endpoint: "${MINIO_ENDPOINT:http://localhost:9000}"
     vault:
       uri: "${VAULT_URI:http://localhost:8200}"
-      token: "${VAULT_TOKEN:hvs.fI1GQCutzKi6ouX36ZbOYNyI}"
+      token: "${VAULT_TOKEN:hvs.6kSyqeaKbLKv7kBHoJvHz6KR}"
       kv:
         enabled: true
         backend: kv

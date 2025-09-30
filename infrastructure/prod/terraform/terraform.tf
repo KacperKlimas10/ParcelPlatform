@@ -9,13 +9,18 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "4.45.1"
     }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "3.0.2"
-    }
   }
 }
-
 provider "cloudflare" {
   api_token = var.cloudflare_api_token
+}
+
+provider "azurerm" {
+  features {
+    resource_group {
+      prevent_deletion_if_contains_resources = false
+    }
+  }
+  client_id       = var.azure_client_id
+  client_secret   = var.azure_client_secret
 }

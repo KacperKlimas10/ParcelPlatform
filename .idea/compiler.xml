@@ -27,6 +27,7 @@
       <module name="auth-service" options="-parameters" />
       <module name="label-service" options="-parameters" />
       <module name="notification-service" options="-parameters" />
+      <module name="parcel-platform" options="" />
       <module name="pricing-service" options="-parameters" />
       <module name="shared-resources" options="-parameters" />
       <module name="shipment-service" options="-parameters" />

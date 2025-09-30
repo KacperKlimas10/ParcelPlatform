@@ -1,4 +1,8 @@
 .idea
 infrastructure/prod/terraform/.terraform
 
+infrastructure/prod/terraform/terraform.tfstate
+infrastructure/prod/terraform/terraform.tfstate.backup
 infrastructure/prod/terraform/.terraform.lock.hcl
+infrastructure/prod/terraform/var.tfvars
+

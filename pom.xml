@@ -6,33 +6,31 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.4</version>
+        <version>3.5.6</version>
     </parent>
-    <groupId>com.hugoparcel</groupId>
-    <artifactId>hugoparcel-platform</artifactId>
+    <groupId>com.parcelplatform</groupId>
+    <artifactId>parcel-platform</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
-        <module>user-service</module>
-        <module>shipment-service</module>
-        <module>label-service</module>
-        <module>notification-service</module>
-        <module>pricing-service</module>
-        <module>tracking-service</module>
-        <module>storage-service</module>
         <module>shared-resources</module>
+        <module>user-service</module>
+        <module>storage-service</module>
+        <module>notification-service</module>
+        <module>label-service</module>
+        <module>tracking-service</module>
+        <module>shipment-service</module>
+        <module>pricing-service</module>
     </modules>
+    <properties>
+        <java.version>17</java.version>
+    </properties>
         <dependencies>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
                 <version>3.2.3</version>
                 <type>pom</type>
-            </dependency>
-            <dependency>
-                <groupId>com.hugoparcel</groupId>
-                <artifactId>shared-resources</artifactId>
-                <version>1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
@@ -49,10 +47,6 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-security</artifactId>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-data-jpa</artifactId>
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
@@ -73,6 +67,14 @@
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>1.18.38</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-actuator</artifactId>
+            </dependency>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-registry-prometheus</artifactId>
             </dependency>
         </dependencies>
     <build>

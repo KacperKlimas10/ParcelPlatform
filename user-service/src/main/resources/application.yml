@@ -2,7 +2,7 @@ spring:
   application:
     name: "user-service"
   datasource:
-    url: "${DB_URL:jdbc:postgresql://localhost/hugoparcel}"
+    url: "${DB_URL:jdbc:postgresql://localhost/parcelplatform}"
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -11,7 +11,7 @@ spring:
   cloud:
     vault:
       uri: "${VAULT_URI:http://localhost:8200}"
-      token: "${VAULT_TOKEN:hvs.fI1GQCutzKi6ouX36ZbOYNyI}"
+      token: "${VAULT_TOKEN:hvs.6kSyqeaKbLKv7kBHoJvHz6KR}"
       kv:
         enabled: true
         backend: kv
