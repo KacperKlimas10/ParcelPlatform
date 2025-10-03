@@ -9,6 +9,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <artifactId>shared-resources</artifactId>
+    <packaging>jar</packaging>
     <build>
     <plugins>
         <plugin>

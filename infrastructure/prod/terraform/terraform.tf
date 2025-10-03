@@ -9,6 +9,14 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "4.45.1"
     }
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = "3.6.0"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "3.0.2"
+    }
   }
 }
 provider "cloudflare" {
@@ -21,6 +29,12 @@ provider "azurerm" {
       prevent_deletion_if_contains_resources = false
     }
   }
-  client_id       = var.azure_client_id
-  client_secret   = var.azure_client_secret
+  subscription_id     = "c83f29ee-51b9-48dd-80f1-048acbca4b9a"
+  storage_use_azuread = true
+}
+
+provider "helm" {
+  kubernetes = {
+    config_path = "~/.kube/config"
+  }
 }

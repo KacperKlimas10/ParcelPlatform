@@ -23,15 +23,17 @@ variable "azure_application_tags" {
     "env" : "dev"
   }
 }
-variable "azure_client_id" {
-  type = string
-}
-variable "azure_client_secret" {
-  type      = string
-  sensitive = true
-}
 
 variable "azure_region" {
   type    = string
   default = "eastus2"
+}
+
+variable "azure_aks_client_id" {
+  type      = string
+  sensitive = true
+}
+variable "azure_aks_client_secret" {
+  type      = string
+  sensitive = true
 }
