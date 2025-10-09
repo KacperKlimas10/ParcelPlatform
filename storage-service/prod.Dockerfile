@@ -1,10 +1,10 @@
-FROM openjdk:26-slim
+FROM openjdk:26-jdk-slim
 
 WORKDIR /app
 
-RUN groupadd -r webservice &&  \
+RUN groupadd -r webservice && \
     useradd -r webservice -g webservice && \
-    chown -R webservice:webservice /app \
+    chown -R webservice:webservice /app
 
 COPY target/*.jar webservice.jar
 

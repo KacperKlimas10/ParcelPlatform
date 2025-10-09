@@ -1,3 +1,7 @@
+variable "cloudflare_account_email" {
+  type = string
+}
+
 variable "cloudflare_api_token" {
   type      = string
   sensitive = true
@@ -29,11 +33,6 @@ variable "azure_region" {
   default = "eastus2"
 }
 
-variable "azure_aks_client_id" {
-  type      = string
-  sensitive = true
-}
-variable "azure_aks_client_secret" {
-  type      = string
-  sensitive = true
+variable "azure_subscription_id" {
+  type = string
 }
