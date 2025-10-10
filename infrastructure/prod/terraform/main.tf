@@ -81,7 +81,7 @@ resource "tls_private_key" "azure_aks_key" {
 }
 
 resource "azurerm_ssh_public_key" "azure_aks_key" {
-  name                = "AksKey"
+  name                = "akskey"
   resource_group_name = module.azure_resource_group.name
   location            = var.azure_region
   public_key          = tls_private_key.azure_aks_key.public_key_openssh
@@ -138,7 +138,7 @@ module "azure_aks" {
   sku_tier            = "Standard"
   default_node_pool = { # System Node VirtualMachineScaleSets
     name                 = "systemnode"
-    vm_size              = "Standard_A2_v2" # 2 vCPU 4 GB
+    vm_size              = "Standard_A4_v2" # 4 vCPU 8 GB
     os_sku               = "AzureLinux"
     auto_scaling_enabled = true
     min_count            = 1
@@ -151,7 +151,7 @@ module "azure_aks" {
   node_pools = {
     "node1" = { # User Node VirtualMachineScaleSets
       name                 = "usrnode1"
-      vm_size              = "Standard_A2_v2" # 2 vCPU 4 GB
+      vm_size              = "Standard_A4_v2" # 4 vCPU 8 GB
       os_sku               = "AzureLinux"
       auto_scaling_enabled = true
       min_count            = 1
@@ -161,18 +161,18 @@ module "azure_aks" {
       zones                = ["1", "2", "3"] # All Availability Zones
       tags                 = var.azure_application_tags
     }
-    # "node2" = { # User Node VirtualMachineScaleSets
-    #   name                 = "usernode2"
-    #   vm_size              = "Standard_A2_v2" # 2 vCPU 4 GB
-    #   os_sku               = "AzureLinux"
-    #   auto_scaling_enabled = true
-    #   min_count            = 1
-    #   node_count           = 1
-    #   max_count            = 3
-    #   vnet_subnet_id       = module.azure_node_vnet.subnets["subnet3"].resource_id
-    #   zones                = ["2"]
-    #   tags                 = var.azure_application_tags
-    # }
+    "node2" = { # User Node VirtualMachineScaleSets
+      name                 = "usrnode2"
+      vm_size              = "Standard_A2_v2" # 2 vCPU 4 GB
+      os_sku               = "AzureLinux"
+      auto_scaling_enabled = true
+      min_count            = 1
+      node_count           = 1
+      max_count            = 3
+      vnet_subnet_id       = module.azure_node_vnet.subnets["subnet3"].resource_id
+      zones                = ["1", "2", "3"]
+      tags                 = var.azure_application_tags
+    }
   }
   dns_prefix                      = "parcelplatform"
   create_nodepools_before_destroy = true
@@ -225,15 +225,49 @@ data "azurerm_container_registry" "azure_container_registry" {
 
 /* HELM */
 
-resource "helm_release" "vault" {
-  name             = "vault-secrets-operator"
-  repository       = "https://helm.releases.hashicorp.com"
-  chart            = "vault-secrets-operator"
-  version          = "0.10.0"
-  namespace        = "vault-secrets-operator"
+resource "helm_release" "kong_gateway_operator" {
+  name             = "kong-operator"
+  repository       = "https://charts.konghq.com"
+  chart            = "kong-operator"
+  namespace        = "kong-system"
   create_namespace = true
+  set = [
+    {
+      name  = "env.ENABLE_CONTROLLER_KONNECT"
+      value = true
+    },
+    {
+      name  = "global.webhooks.options.certManager.enabled"
+      value = true
+    }
+  ]
+  depends_on = [module.azure_aks, helm_release.cert_manager]
 }
 
+resource "helm_release" "istio_base" {
+  name             = "istio-base"
+  repository       = "https://istio-release.storage.googleapis.com/charts"
+  chart            = "base"
+  namespace        = "istio-system"
+  create_namespace = true
+  set = [
+    {
+      name  = "defaultRevision"
+      value = "default"
+    }
+  ]
+  depends_on = [module.azure_aks]
+}
+
+resource "helm_release" "istio_d" {
+  name             = "istiod"
+  repository       = "https://istio-release.storage.googleapis.com/charts"
+  chart            = "istiod"
+  namespace        = "istio-system"
+  create_namespace = true
+  wait             = true
+  depends_on       = [module.azure_aks]
+}
 resource "helm_release" "cert_manager" {
   name             = "cert-manager"
   repository       = "https://charts.jetstack.io"
@@ -247,32 +281,7 @@ resource "helm_release" "cert_manager" {
       value = true
     }
   ]
-}
-
-resource "helm_release" "argo_cd" {
-  name             = "argo-cd"
-  repository       = "https://argoproj.github.io/argo-helm"
-  chart            = "argo-cd"
-  namespace        = "argocd"
-  create_namespace = true
-  # values = [
-  #   <<-EOF
-  #     redis-ha:
-  #       enabled: true
-  #     controller:
-  #       replicas: 1
-  #     server:
-  #       autoscaling:
-  #         enabled: true
-  #         minReplicas: 2
-  #     repoServer:
-  #       autoscaling:
-  #         enabled: true
-  #         minReplicas: 2
-  #     applicationSet:
-  #       replicas: 2
-  #   EOF
-  # ]
+  depends_on = [module.azure_aks]
 }
 
 resource "helm_release" "external_dns" {
@@ -307,4 +316,51 @@ resource "helm_release" "external_dns" {
             key: email
     EOF
   ]
+  depends_on = [module.azure_aks]
+}
+
+resource "helm_release" "argo_cd" {
+  name             = "argo-cd"
+  repository       = "https://argoproj.github.io/argo-helm"
+  chart            = "argo-cd"
+  namespace        = "argocd"
+  create_namespace = true
+  # values = [
+  #   <<-EOF
+  #     redis-ha:
+  #       enabled: true
+  #     controller:
+  #       replicas: 1
+  #     server:
+  #       autoscaling:
+  #         enabled: true
+  #         minReplicas: 2
+  #     repoServer:
+  #       autoscaling:
+  #         enabled: true
+  #         minReplicas: 2
+  #     applicationSet:
+  #       replicas: 2
+  #   EOF
+  # ]
+  depends_on = [module.azure_aks]
+}
+
+resource "helm_release" "vault" {
+  name             = "vault-secrets-operator"
+  repository       = "https://helm.releases.hashicorp.com"
+  chart            = "vault-secrets-operator"
+  version          = "0.10.0"
+  namespace        = "vault-secrets-operator"
+  create_namespace = true
+  depends_on       = [module.azure_aks]
+}
+
+resource "helm_release" "prometheus_stack" {
+  name             = "kube-prometheus-stack"
+  chart            = "kube-prometheus-stack"
+  repository       = "https://prometheus-community.github.io/helm-charts"
+  namespace        = "kube-prometheus-stack"
+  create_namespace = true
+  depends_on       = [module.azure_aks]
 }
