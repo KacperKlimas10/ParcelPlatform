@@ -1,14 +1,12 @@
-output "azure_aks_host" {
-  value     = module.azure_aks.host
+output "azure_aks_ssh_private_key" {
+  value = {
+    pem     = tls_private_key.azure_aks_key.private_key_pem
+    openssh = tls_private_key.azure_aks_key.public_key_openssh
+  }
   sensitive = true
 }
 
-output "azure_aks_cert" {
-  value     = module.azure_aks.cluster_ca_certificate
+output "azure_aks_kube_config" {
+  value     = module.azure_aks.kube_config
   sensitive = true
 }
-
-output "azure_aks_fqdn" {
-  value = module.azure_aks.public_fqdn
-}
-

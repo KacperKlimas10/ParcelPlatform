@@ -36,3 +36,9 @@ variable "azure_region" {
 variable "azure_subscription_id" {
   type = string
 }
+
+variable "azure_vpn_path_to_cert" {
+  type        = string
+  description = "Path to generated DER .CER CA certificate"
+  default     = "certskeys/parcelplatformCA.cer"
+}

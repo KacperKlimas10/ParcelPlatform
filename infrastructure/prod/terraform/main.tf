@@ -1,4 +1,5 @@
 /* CLOUDFLARE */
+
 resource "cloudflare_zone" "parcel_platform_zone" {
   account = {
     id = var.cloudflare_account_id
@@ -7,6 +8,14 @@ resource "cloudflare_zone" "parcel_platform_zone" {
   type = "full"
 }
 
+resource "cloudflare_dns_record" "azure_vpn_dns_record" {
+  name    = "vpn"
+  ttl     = 3600
+  type    = "A"
+  zone_id = cloudflare_zone.parcel_platform_zone.id
+  comment = "A record for Azure VPN Gateway"
+  content = azurerm_public_ip.vpn_public_ip.ip_address
+}
 resource "cloudflare_dns_record" "azure_blob_dns_record" {
   name    = "blob"
   ttl     = 3600
@@ -30,8 +39,6 @@ resource "cloudflare_dns_record" "azure_registry_dns_record" {
 locals {
   env                      = var.azure_application_tags.env
   azure_resourcegroup_name = module.azure_naming.resource_group.name_unique
-  azure_vnet_name          = module.azure_naming.virtual_network.name_unique
-  azure_subnet_name        = module.azure_naming.subnet.name_unique
 }
 
 resource "azuread_application" "parcel_platform" {
@@ -85,23 +92,45 @@ resource "azurerm_ssh_public_key" "azure_aks_key" {
   resource_group_name = module.azure_resource_group.name
   location            = var.azure_region
   public_key          = tls_private_key.azure_aks_key.public_key_openssh
+  tags                = var.azure_application_tags
 }
 
-# module "azure_firewall" {
-#   source              = "Azure/avm-res-network-azurefirewall/azurerm"
-#   version             = "0.4.0"
-#   firewall_sku_name   = "AZFW_VNet"
-#   firewall_sku_tier   = "Standard"
-#   location            = var.azure_region
-#   name                = module.azure_naming.firewall.name_unique
-#   resource_group_name = module.azure_resource_group.name
-#   tags                = var.azure_application_tags
-# }
+resource "azurerm_public_ip" "vpn_public_ip" {
+  name                = module.azure_naming.public_ip.name_unique
+  location            = var.azure_region
+  resource_group_name = module.azure_resource_group.name
+  allocation_method   = "Static"
+  zones               = ["1", "2", "3"]
+  tags                = var.azure_application_tags
+}
 
-module "azure_node_vnet" {
+resource "azurerm_virtual_network_gateway" "vpn_gateway" {
+  name                = module.azure_naming.virtual_network_gateway.name_unique
+  location            = var.azure_region
+  resource_group_name = module.azure_resource_group.name
+  type                = "Vpn"
+  generation          = "Generation1"
+  sku                 = "VpnGw2AZ"
+  ip_configuration {
+    public_ip_address_id = azurerm_public_ip.vpn_public_ip.id
+    subnet_id            = module.azure_management_vnet.subnets["vpnsubnet"].resource_id
+  }
+  vpn_client_configuration {
+    vpn_auth_types       = ["Certificate"]
+    vpn_client_protocols = ["IkeV2", "OpenVPN"]
+    address_space        = ["172.16.0.0/24"]
+    root_certificate {
+      name             = "ParcelPlatformCA"
+      public_cert_data = replace(file(var.azure_vpn_path_to_cert), "/-.*-/", "")
+    }
+  }
+  tags = var.azure_application_tags
+}
+
+module "azure_management_vnet" {
   source        = "Azure/avm-res-network-virtualnetwork/azurerm"
   version       = "0.11.0"
-  address_space = ["10.1.0.0/16"]
+  address_space = ["10.1.0.0/24"]
   location      = var.azure_region
   dns_servers = {
     dns_servers = [
@@ -110,24 +139,149 @@ module "azure_node_vnet" {
       "8.8.8.8"  # Google DNS
     ]
   }
-  name      = "${local.azure_vnet_name}_${local.env}"
+  name      = "vnet-parcelplatform-management"
   parent_id = module.azure_resource_group.resource_id
   subnets = {
-    "subnet1" = {
-      name             = "${local.azure_subnet_name}1_${local.env}"
-      address_prefixes = ["10.1.0.0/24"]
-    }
-    "subnet2" = {
-      name             = "${local.azure_subnet_name}2_${local.env}"
-      address_prefixes = ["10.1.1.0/24"]
-    }
-    "subnet3" = {
-      name             = "${local.azure_subnet_name}3_${local.env}"
-      address_prefixes = ["10.1.2.0/24"]
+    "vpnsubnet" = {
+      name             = "GatewaySubnet"
+      address_prefixes = ["10.1.0.0/27"]
     }
   }
   tags = var.azure_application_tags
 }
+
+module "azure_node_vnet" {
+  source        = "Azure/avm-res-network-virtualnetwork/azurerm"
+  version       = "0.11.0"
+  address_space = ["10.0.0.0/16"]
+  location      = var.azure_region
+  dns_servers = {
+    dns_servers = [
+      "1.1.1.1", # Cloudflare DNS
+      "1.0.0.1", # Cloudflare DNS
+      "8.8.8.8"  # Google DNS
+    ]
+  }
+  name      = "vnet-parcelplatform-aks"
+  parent_id = module.azure_resource_group.resource_id
+  subnets = {
+    "subnet1" = {
+      name             = "vnet-subnet1"
+      address_prefixes = ["10.0.0.0/24"]
+      network_security_group = {
+        id = module.azure_node_vnet_nsg.resource_id
+      }
+    }
+    "subnet2" = {
+      name             = "vnet-subnet2"
+      address_prefixes = ["10.0.1.0/24"]
+      network_security_group = {
+        id = module.azure_node_vnet_nsg.resource_id
+      }
+    }
+    "subnet3" = {
+      name             = "vnet-subnet3"
+      address_prefixes = ["10.0.2.0/24"]
+      network_security_group = {
+        id = module.azure_node_vnet_nsg.resource_id
+      }
+    }
+  }
+  tags = var.azure_application_tags
+}
+
+resource "azurerm_virtual_network_peering" "management_aks" {
+  name                      = "management-aks"
+  resource_group_name       = module.azure_resource_group.name
+  virtual_network_name      = module.azure_management_vnet.name
+  remote_virtual_network_id = module.azure_node_vnet.resource_id
+  allow_gateway_transit     = true
+}
+
+resource "azurerm_virtual_network_peering" "aks_management" {
+  name                      = "aks-management"
+  resource_group_name       = module.azure_resource_group.name
+  virtual_network_name      = module.azure_node_vnet.name
+  remote_virtual_network_id = module.azure_management_vnet.resource_id
+  use_remote_gateways       = true
+}
+
+# module "azure_node_vnet_route_table" {
+#   source              = "Azure/avm-res-network-routetable/azurerm"
+#   version             = "0.4.1"
+#   location            = var.azure_region
+#   name                = "routetable-azure-node-vnet"
+#   resource_group_name = module.azure_resource_group.name
+#   routes = {
+#     route1 = {
+#       name           = "route-to-vpn-pool"
+#       address_prefix = "172.16.0.0/24"
+#       next_hop_type  = "VnetLocal"
+#     }
+#   }
+#   subnet_resource_ids = {
+#     subnet1 = module.azure_node_vnet.subnets["subnet1"].resource_id
+#     subnet2 = module.azure_node_vnet.subnets["subnet2"].resource_id
+#     subnet3 = module.azure_node_vnet.subnets["subnet3"].resource_id
+#   }
+#   tags = var.azure_application_tags
+# }
+
+module "azure_node_vnet_nsg" {
+  source              = "Azure/avm-res-network-networksecuritygroup/azurerm"
+  version             = "0.5.0"
+  location            = var.azure_region
+  name                = "nsg-azure-node-vnet"
+  resource_group_name = module.azure_resource_group.name
+  security_rules = {
+    rule1 = {
+      name                       = "InboundWeb"
+      priority                   = 100
+      protocol                   = "Tcp"
+      direction                  = "Inbound"
+      access                     = "Allow"
+      destination_address_prefix = "*"
+      destination_port_ranges    = ["80", "443"]
+      source_address_prefix      = "Internet"
+      source_port_range          = "*"
+    }
+    rule2 = {
+      name                       = "InboundManagement"
+      priority                   = 150
+      protocol                   = "*"
+      direction                  = "Inbound"
+      access                     = "Allow"
+      destination_address_prefix = "*"
+      destination_port_range     = "*"
+      source_address_prefix      = "10.1.0.0/24"
+      source_port_range          = "*"
+    }
+    rule4 = {
+      name                       = "OutboundManagement"
+      priority                   = 100
+      protocol                   = "*"
+      direction                  = "Outbound"
+      access                     = "Allow"
+      destination_address_prefix = "10.1.0.0/24"
+      destination_port_range     = "*"
+      source_address_prefix      = "*"
+      source_port_range          = "*"
+    }
+    rule5 = {
+      name                       = "OutboundWeb"
+      priority                   = 150
+      protocol                   = "Tcp"
+      direction                  = "Outbound"
+      access                     = "Allow"
+      destination_address_prefix = "Internet"
+      destination_port_range     = "*"
+      source_address_prefix      = "*"
+      source_port_range          = "*"
+    }
+  }
+  tags = var.azure_application_tags
+}
+
 
 module "azure_aks" {
   source              = "Azure/avm-res-containerservice-managedcluster/azurerm"
@@ -170,12 +324,19 @@ module "azure_aks" {
       node_count           = 1
       max_count            = 3
       vnet_subnet_id       = module.azure_node_vnet.subnets["subnet3"].resource_id
-      zones                = ["1", "2", "3"]
+      zones                = ["1", "2", "3"] # All Availability Zones
       tags                 = var.azure_application_tags
     }
   }
-  dns_prefix                      = "parcelplatform"
-  create_nodepools_before_destroy = true
+  network_profile = {
+    network_plugin      = "azure",
+    network_plugin_mode = "overlay",
+    network_policy      = "azure"
+    dns_service_ip      = "172.16.0.10"
+    service_cidr        = "172.16.0.0/24"
+    pod_cidr            = "172.17.0.0/16"
+  }
+  dns_prefix = "parcelplatform"
   linux_profile = {
     admin_username = "parcelplatform_admin"
     ssh_key        = azurerm_ssh_public_key.azure_aks_key.public_key
@@ -268,6 +429,7 @@ resource "helm_release" "istio_d" {
   wait             = true
   depends_on       = [module.azure_aks]
 }
+
 resource "helm_release" "cert_manager" {
   name             = "cert-manager"
   repository       = "https://charts.jetstack.io"
