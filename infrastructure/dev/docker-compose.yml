@@ -27,6 +27,33 @@ services:
 
   # MICROSERVICES
 
+  storage-service:
+    image: storage-service:dev
+    build:
+      context: ../storage-service
+    restart: on-failure
+    environment:
+      SERVER_PORT: 8501
+      MINIO_ENDPOINT: http://minio:9000
+      VAULT_URI: http://vault:8200
+      RABBITMQ_HOST: rabbitmq
+    networks:
+      - backend-network
+      - db-network
+  user-service:
+    image: user-service:dev
+    build:
+      context: ../user-service
+    restart: on-failure
+    environment:
+      SERVER_PORT: 8500
+      VAULT_URI: http://vault:8200
+      RABBITMQ_HOST: rabbitmq
+      DB_URL: jdbc:postgresql://postgresql/parcelplatform
+    networks:
+      - backend-network
+      - db-network
+
   # BROKERS
 
   rabbitmq:

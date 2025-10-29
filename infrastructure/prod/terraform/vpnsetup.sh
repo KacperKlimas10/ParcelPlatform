@@ -21,7 +21,7 @@ function generateClientCert {
  openssl genrsa -out $CLIENT_KEY_NAME 2048 && \
  openssl req -new -key $CLIENT_KEY_NAME -out $CLIENT_REQ_NAME -subj "/CN=ParcelPlatformClient" && \
  openssl x509 -req -days 365 -in $CLIENT_REQ_NAME -CA $CA_CERT_PEM_NAME -CAkey $CA_KEY_NAME \
-  -CAcreateserial -out $CLIENT_CERT_NAME -extfile <(echo -e "subjectAltName=DNS:client\nextendedKeyUsage=clientAuth")
+  -CAcreateserial -out $CLIENT_CERT_NAME -extfile <(echo -e "subjectAltName=DNS:$(hostname)\nextendedKeyUsage=clientAuth")
 }
 
 if [ ! -d "$DIRECTORY" ]; then

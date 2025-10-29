@@ -5,6 +5,7 @@ spring:
     aws:
       s3:
         endpoint: "${MINIO_ENDPOINT:http://localhost:9000}"
+        region: "us-east-1"
     vault:
       uri: "${VAULT_URI:http://localhost:8200}"
       token: "${VAULT_TOKEN:hvs.6kSyqeaKbLKv7kBHoJvHz6KR}"
