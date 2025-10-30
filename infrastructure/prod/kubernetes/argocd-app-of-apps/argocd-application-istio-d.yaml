@@ -8,7 +8,7 @@ spec:
   source:
     chart: istiod
     repoURL: https://istio-release.storage.googleapis.com/charts
-    targetRevision: HEAD
+    targetRevision: master
     helm:
       releaseName: istiod
   destination:
@@ -16,7 +16,6 @@ spec:
     namespace: istio-system
   syncPolicy:
     automated:
-      enable: true
       prune: false
       selfHeal: true
     syncOptions:

@@ -16,7 +16,6 @@ spec:
     namespace: kube-prometheus-stack
   syncPolicy:
     automated:
-      enable: true
       prune: false
       selfHeal: true
     syncOptions:

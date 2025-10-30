@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: ParcelPlatformApps
+  name: parcel-platform
   namespace: argocd
 spec:
   project: default
@@ -14,7 +14,6 @@ spec:
     namespace: argocd
   syncPolicy:
     automated:
-      enable: true
       prune: false
       selfHeal: true
     syncOptions:

@@ -21,7 +21,6 @@ spec:
     namespace: kong-system
   syncPolicy:
     automated:
-      enable: true
       prune: false
       selfHeal: true
     syncOptions:
