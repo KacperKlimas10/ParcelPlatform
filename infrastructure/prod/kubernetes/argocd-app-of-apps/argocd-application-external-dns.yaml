@@ -1,17 +1,37 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: sealed-secrets
+  name: external-dns
   namespace: argocd
 spec:
   project: default
   source:
-    chart: sealed-secrets
-    repoURL: https://bitnami-labs.github.io/sealed-secrets
-    targetRevision: 1.16.1
+    chart: external-dns
+    repoURL: https://charts.jetstack.io
+    targetRevision: HEAD
     helm:
-      releaseName: sealed-secrets
+      releaseName: external-dns
+      values: |
+        provider:
+          name: cloudflare
+        env:
+          - name: CF_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: cloudflare-api-key
+                key: apiKey
+          - name: CF_API_EMAIL
+            valueFrom:
+              secretKeyRef:
+                name: cloudflare-api-key
+                key: email
   destination:
-    server: "https://kubernetes.default.svc"
-    namespace: kubeseal
-  
+    server: https://kubernetes.default.svc
+    namespace: external-dns
+  syncPolicy:
+    automated:
+      enable: true
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

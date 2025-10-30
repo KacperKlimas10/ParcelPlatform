@@ -1,17 +1,23 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: sealed-secrets
+  name: vault-secrets-operator
   namespace: argocd
 spec:
   project: default
   source:
-    chart: sealed-secrets
-    repoURL: https://bitnami-labs.github.io/sealed-secrets
-    targetRevision: 1.16.1
+    chart: vault-secrets-operator
+    repoURL: https://helm.releases.hashicorp.com
+    targetRevision: 0.10.0
     helm:
-      releaseName: sealed-secrets
+      releaseName: vault-secrets-operator
   destination:
-    server: "https://kubernetes.default.svc"
-    namespace: kubeseal
-  
+    server: https://kubernetes.default.svc
+    namespace: vault-secrets-operator
+  syncPolicy:
+    automated:
+      enable: true
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

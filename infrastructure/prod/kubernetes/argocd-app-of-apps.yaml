@@ -1,17 +1,21 @@
-apiVersion: v1
-kind: Pod
+apiVersion: argoproj.io/v1alpha1
+kind: Application
 metadata:
-  name: $title$
-  labels:
-    role: $title$
+  name: ParcelPlatformApps
+  namespace: argocd
 spec:
-  containers:
-    - name: $title$
-      image: $nginx$
-      imagePullPolicy: IfNotPresent
-      ports:
-        - name: $title$
-          containerPort: $80$
-          protocol: $TCP$
-  restartPolicy: Always
-  $END$
+  project: default
+  source:
+    repoURL: https://github.com/KacperKlimas10/ParcelPlatform.git
+    targetRevision: HEAD
+    path: infrastructure/prod/kubernetes/argocd-app-of-apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      enable: true
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
