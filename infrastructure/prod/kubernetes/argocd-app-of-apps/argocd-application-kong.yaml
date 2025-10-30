@@ -8,6 +8,7 @@ spec:
   source:
     chart: kong-operator
     repoURL: https://charts.konghq.com
+    targetRevision: HEAD
     helm:
       releaseName: kong-operator
       parameters:
