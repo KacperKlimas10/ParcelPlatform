@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    chart: gateway-operator
+    chart: kong-operator
     repoURL: https://charts.konghq.com
     targetRevision: 0.6.1
     helm:

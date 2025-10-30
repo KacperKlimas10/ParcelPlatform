@@ -12,6 +12,15 @@ spec:
     helm:
       releaseName: external-dns
       values: |
+        apiVersion: v1
+        data:
+          apiKey: apikey
+          email: email
+        kind: Secret
+        metadata:
+          creationTimestamp: null
+          name: cloudflare-api-key
+        ---       
         provider:
           name: cloudflare
         env:

@@ -386,105 +386,11 @@ data "azurerm_container_registry" "azure_container_registry" {
 
 /* HELM */
 
-resource "helm_release" "kong_gateway_operator" {
-  name             = "kong-operator"
-  repository       = "https://charts.konghq.com"
-  chart            = "kong-operator"
-  namespace        = "kong-system"
-  create_namespace = true
-  set = [
-    {
-      name  = "env.ENABLE_CONTROLLER_KONNECT"
-      value = true
-    },
-    {
-      name  = "global.webhooks.options.certManager.enabled"
-      value = true
-    }
-  ]
-  depends_on = [module.azure_aks, helm_release.cert_manager]
-}
-
-resource "helm_release" "istio_base" {
-  name             = "istio-base"
-  repository       = "https://istio-release.storage.googleapis.com/charts"
-  chart            = "base"
-  namespace        = "istio-system"
-  create_namespace = true
-  set = [
-    {
-      name  = "defaultRevision"
-      value = "default"
-    }
-  ]
-  depends_on = [module.azure_aks]
-}
-
-resource "helm_release" "istio_d" {
-  name             = "istiod"
-  repository       = "https://istio-release.storage.googleapis.com/charts"
-  chart            = "istiod"
-  namespace        = "istio-system"
-  create_namespace = true
-  wait             = true
-  depends_on       = [module.azure_aks]
-}
-
-resource "helm_release" "cert_manager" {
-  name             = "cert-manager"
-  repository       = "https://charts.jetstack.io"
-  chart            = "cert-manager"
-  version          = "v1.19.0"
-  namespace        = "cert-manager"
-  create_namespace = true
-  set = [
-    {
-      name  = "crds.enabled"
-      value = true
-    }
-  ]
-  depends_on = [module.azure_aks]
-}
-
-resource "helm_release" "external_dns" {
-  name             = "external-dns"
-  repository       = "https://kubernetes-sigs.github.io/external-dns/"
-  chart            = "external-dns"
-  namespace        = "external-dns"
-  create_namespace = true
-  values = [
-    <<-EOF
-      apiVersion: v1
-      data:
-        apiKey: ${var.cloudflare_api_token}
-        email: ${var.cloudflare_account_email}
-      kind: Secret
-      metadata:
-        creationTimestamp: null
-        name: cloudflare-api-key
-      ---
-      provider:
-        name: cloudflare
-      env:
-        - name: CF_API_KEY
-        valueFrom:
-          secretKeyRef:
-            name: cloudflare-api-key
-            key: apiKey
-        - name: CF_API_EMAIL
-        valueFrom:
-          secretKeyRef:
-            name: cloudflare-api-key
-            key: email
-    EOF
-  ]
-  depends_on = [module.azure_aks]
-}
-
 resource "helm_release" "argo_cd" {
   name             = "argo-cd"
   repository       = "https://argoproj.github.io/argo-helm"
   chart            = "argo-cd"
+  version          = "9.0.5"
   namespace        = "argocd"
   create_namespace = true
   # values = [
@@ -506,23 +412,4 @@ resource "helm_release" "argo_cd" {
   #   EOF
   # ]
   depends_on = [module.azure_aks]
-}
-
-resource "helm_release" "vault" {
-  name             = "vault-secrets-operator"
-  repository       = "https://helm.releases.hashicorp.com"
-  chart            = "vault-secrets-operator"
-  version          = "0.10.0"
-  namespace        = "vault-secrets-operator"
-  create_namespace = true
-  depends_on       = [module.azure_aks]
-}
-
-resource "helm_release" "prometheus_stack" {
-  name             = "kube-prometheus-stack"
-  chart            = "kube-prometheus-stack"
-  repository       = "https://prometheus-community.github.io/helm-charts"
-  namespace        = "kube-prometheus-stack"
-  create_namespace = true
-  depends_on       = [module.azure_aks]
 }
