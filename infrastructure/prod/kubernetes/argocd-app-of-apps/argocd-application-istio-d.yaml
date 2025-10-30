@@ -8,7 +8,6 @@ spec:
   source:
     chart: istiod
     repoURL: https://istio-release.storage.googleapis.com/charts
-    targetRevision: master
     helm:
       releaseName: istiod
   destination:

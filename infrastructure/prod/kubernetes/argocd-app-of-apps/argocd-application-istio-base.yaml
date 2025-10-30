@@ -8,7 +8,6 @@ spec:
   source:
     chart: base
     repoURL: https://istio-release.storage.googleapis.com/charts
-    targetRevision: HEAD
     helm:
       releaseName: istio-base
       parameters:

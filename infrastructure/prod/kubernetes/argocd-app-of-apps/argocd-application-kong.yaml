@@ -8,14 +8,13 @@ spec:
   source:
     chart: kong-operator
     repoURL: https://charts.konghq.com
-    targetRevision: HEAD
     helm:
       releaseName: kong-operator
       parameters:
         - name: env.ENABLE_CONTROLLER_KONNECT
-          value: true
+          value: "true"
         - name: global.webhooks.options.certManager.enabled
-          value: true
+          value: "true"
   destination:
     server: https://kubernetes.default.svc
     namespace: kong-system
