@@ -25,5 +25,18 @@ spring:
       retry:
         enabled: true
         initial-interval: 2s
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true   # Kubernetes readiness and liveness probes
+        add-additional-paths: true
+  endpoints:  # Metrics for Prometheus
+    web:
+      exposure:
+        include: "*"
+    jmx:
+      exposure:
+        include: "*"
 server:
   port: "${SERVER_PORT:8500}"
