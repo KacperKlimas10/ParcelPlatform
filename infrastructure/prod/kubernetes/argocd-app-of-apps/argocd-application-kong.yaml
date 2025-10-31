@@ -1,16 +1,16 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kong-operator
+  name: kong-gateway-operator
   namespace: argocd
 spec:
   project: default
   source:
-    chart: kong-operator
+    chart: kong-gateway-operator
     repoURL: https://charts.konghq.com
     targetRevision: 0.6.1
     helm:
-      releaseName: kong-operator
+      releaseName: gateway-operator
       parameters:
         - name: env.ENABLE_CONTROLLER_KONNECT
           value: "true"
@@ -25,3 +25,4 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true

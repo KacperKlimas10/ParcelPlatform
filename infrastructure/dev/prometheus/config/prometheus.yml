@@ -2,8 +2,8 @@ scrape_configs:
   - job_name: "user-service"
     metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: [ "localhost:8500" ]
+      - targets: ["user-service:8080"]
   - job_name: "storage-service"
     metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: ["localhost:8501"]
+      - targets: ["storage-service:8080"]

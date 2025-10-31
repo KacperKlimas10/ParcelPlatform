@@ -23,6 +23,7 @@ services:
       - ./kong/config:/kong/declarative/
     networks:
       - backend-network
+      - monitoring-network
     command: kong start
 
   # MICROSERVICES
@@ -33,26 +34,28 @@ services:
       context: ../storage-service
     restart: on-failure
     environment:
-      SERVER_PORT: 8501
+      SERVER_PORT: 8080
       MINIO_ENDPOINT: http://minio:9000
       VAULT_URI: http://vault:8200
       RABBITMQ_HOST: rabbitmq
     networks:
       - backend-network
       - db-network
+      - monitoring-network
   user-service:
     image: user-service:dev
     build:
       context: ../user-service
     restart: on-failure
     environment:
-      SERVER_PORT: 8500
+      SERVER_PORT: 8080
       VAULT_URI: http://vault:8200
       RABBITMQ_HOST: rabbitmq
       DB_URL: jdbc:postgresql://postgresql/parcelplatform
     networks:
       - backend-network
       - db-network
+      - monitoring-network
 
   # BROKERS
 
@@ -72,6 +75,7 @@ services:
       - ./rabbitmq/config:/etc/rabbitmq
     networks:
       - backend-network
+      - monitoring-network
 
   # SECRETS
 
@@ -86,6 +90,7 @@ services:
       - ./vault/logs:/vault/logs
     networks:
       - backend-network
+      - monitoring-network
     cap_add:
       - IPC_LOCK
     command: vault server -config=/vault/config/vault.json
@@ -109,6 +114,7 @@ services:
       - ./registry/data:/var/lib/registry
     networks:
       - backend-network
+      - monitoring-network
 
   # DATABASES
 
@@ -125,6 +131,7 @@ services:
       - postgresql:/var/lib/postgresql/data
     networks:
       - db-network
+      - monitoring-network
   redis:
     image: redis:latest
     restart: on-failure
@@ -132,6 +139,7 @@ services:
       - redis:/data
     networks:
       - backend-network
+      - monitoring-network
   mongo:
     image: mongo:latest
     restart: on-failure
@@ -142,6 +150,7 @@ services:
       - mongodb:/data/db
     networks:
       - db-network
+      - monitoring-network
   minio:
     image: quay.io/minio/minio:latest
     restart: on-failure
@@ -155,6 +164,7 @@ services:
       - ./minio/data:/data
     networks:
       - db-network
+      - monitoring-network
     command: server /data --console-address ":9001"
 
   ## DATABASE GUI
@@ -169,7 +179,6 @@ services:
       - "8080:80"
     networks:
       - db-network
-      - monitoring-network
   mongo-express:
     image: mongo-express:latest
     restart: on-failure
@@ -182,7 +191,6 @@ services:
       ME_CONFIG_BASICAUTH: false
     networks:
       - db-network
-      - monitoring-network
   redisinsight:
     image: redis/redisinsight:latest
     restart: on-failure
@@ -192,7 +200,6 @@ services:
       - redisinsight:/data
     networks:
       - backend-network
-      - monitoring-network
 
   # MONITORING
 
@@ -210,7 +217,8 @@ services:
       - "3000:3000"
     networks:
       - monitoring-network
-
+    volumes:
+      - grafana-storage:/var/lib/grafana
 
 volumes:
   postgresql:
@@ -218,6 +226,7 @@ volumes:
   redis:
   redisinsight:
   rabbitmq:
+  grafana-storage:
 
 networks:
   backend-network:
