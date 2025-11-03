@@ -4,7 +4,7 @@ metadata:
   name: parcel-platform
   namespace: argocd
   finalizers:
-    - resources-finalizer.argocd.argoproj.io
+    - resources-finalizer.argocd.argoproj.io # Cascade delete
 spec:
   project: default
   source:
@@ -18,6 +18,5 @@ spec:
     automated:
       prune: true
       selfHeal: true
-    preserveResourcesOnDeletion: false
     syncOptions:
       - CreateNamespace=true
