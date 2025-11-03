@@ -8,11 +8,9 @@ metadata:
 spec:
   project: default
   source:
-    chart: cluster-operator
-    repoURL: quay.io/rabbitmqoperator
-    targetRevision: 2.17.0
-    helm:
-      releaseName: cluster-operator
+    repoURL: https://github.com/rabbitmq/cluster-operator
+    targetRevision: v2.17.0
+    path: releases/latest/download/cluster-operator.yml
   destination:
     server: https://kubernetes.default.svc
     namespace: rabbitmq-system
