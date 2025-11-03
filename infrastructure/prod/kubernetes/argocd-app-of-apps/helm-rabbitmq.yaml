@@ -8,11 +8,11 @@ metadata:
 spec:
   project: default
   source:
-    chart: rabbitmq-cluster-operator
-    repoURL: https://charts.bitnami.com/bitnami
-    targetRevision: 4.4.34
+    chart: cluster-operator
+    repoURL: quay.io/rabbitmqoperator
+    targetRevision: 2.17.0
     helm:
-      releaseName: rabbitmq-cluster-operator
+      releaseName: cluster-operator
   destination:
     server: https://kubernetes.default.svc
     namespace: rabbitmq-system
