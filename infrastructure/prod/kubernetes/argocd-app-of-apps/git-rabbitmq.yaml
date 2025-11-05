@@ -1,8 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: rabbitmq
+  name: rabbitmq-operator
   namespace: argocd
+  labels:
+    version: v2.17.0
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
