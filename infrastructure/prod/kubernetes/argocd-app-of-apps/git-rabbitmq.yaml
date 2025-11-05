@@ -8,9 +8,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/rabbitmq/cluster-operator
-    targetRevision: v2.17.0
-    path: releases/latest/download/cluster-operator.yml
+    repoURL: https://github.com/KacperKlimas10/ParcelPlatform.git
+    targetRevision: feature/argocd-testing
+    path: infrastructure/prod/kubernetes/rabbitmq-manifests
   destination:
     server: https://kubernetes.default.svc
     namespace: rabbitmq-system
