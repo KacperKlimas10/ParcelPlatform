@@ -10,7 +10,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/KacperKlimas10/ParcelPlatform.git
+    repoURL: https://github.com/KacperKlimas10/DevOps.git
     targetRevision: feature/argocd-testing
     path: infrastructure/prod/kubernetes/rabbitmq-manifests
   destination:
