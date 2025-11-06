@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: microservices-backend
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/KacperKlimas10/DevOps.git
+    targetRevision: feature/argocd-testing
+    path: infrastructure/prod/kubernetes/microservices-backend-manifests
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: microservices-backend
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

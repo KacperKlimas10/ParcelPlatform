@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: storage-service
+  namespace: microservices-backend
+  labels:
+    app: storage-service
+spec:
+  selector:
+    matchLabels:
+      app: storage-service
+  template:
+    metadata:
+      name: storage-service
+      labels:
+        app: storage-service
+    spec:
+      containers:
+        - name: storage-service
+          image: storage-service:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+      restartPolicy: Always
