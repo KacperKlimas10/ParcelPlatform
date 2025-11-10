@@ -7,6 +7,8 @@ metadata:
     version: v2.17.0
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/hook: PreSync
 spec:
   project: default
   source:
